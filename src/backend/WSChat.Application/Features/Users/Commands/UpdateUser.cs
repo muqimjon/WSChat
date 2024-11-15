@@ -2,18 +2,16 @@
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using WSChat.Application.Features.Users.Models;
 using WSChat.Application.Interfaces;
-using WSChat.Domain.Entities;
 
-public record UpdateUserProfileCommand(long UserId, string Name, string Email, string Username) : 
+public record UpdateUserProfileCommand(long UserId, string Name, string Email, string Username) :
     IRequest<Models.UserResponse>;
 
-public class UpdateUserProfileCommandHandler(IChatDbContext context) : 
+public class UpdateUserProfileCommandHandler(IChatDbContext context) :
     IRequestHandler<UpdateUserProfileCommand, Models.UserResponse>
 {
     public async Task<Models.UserResponse> Handle(
-        UpdateUserProfileCommand request, 
+        UpdateUserProfileCommand request,
         CancellationToken cancellationToken)
     {
         var user = await context.Users

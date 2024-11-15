@@ -1,9 +1,9 @@
 ﻿namespace WSChat.Application.Features.Chats.Commands;
 
-using WSChat.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WSChat.Application.Features.Chats.Models;
+using WSChat.Application.Interfaces;
 
 public record RemoveUserFromChatCommand(long ChatId, long UserId) : IRequest<ChatUserResponse>;
 

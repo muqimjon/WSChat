@@ -13,7 +13,7 @@ using WSChat.Domain.Entities;
 using WSChat.Domain.Enums;
 
 public record SendMessageCommand(
-    long SenderId, 
+    long SenderId,
     long ChatId,
     string MessageContent,
     long? ReplyToMessageId,
@@ -21,15 +21,15 @@ public record SendMessageCommand(
     IRequest<SendMessageResponse>;
 
 public class SendMessageCommandHandler(
-    IChatDbContext context, 
-    IWebSocketService webSocketService) : 
+    IChatDbContext context,
+    IWebSocketService webSocketService) :
     IRequestHandler<SendMessageCommand, SendMessageResponse>
 {
     public async Task<SendMessageResponse> Handle([FromForm] SendMessageCommand request, CancellationToken cancellationToken)
     {
         var replyMessage = await GetReplyMessageAsync(request.ReplyToMessageId, cancellationToken);
 
-        if(replyMessage is not null && replyMessage.ChatId != request.ChatId)
+        if (replyMessage is not null && replyMessage.ChatId != request.ChatId)
             return new SendMessageResponse
             {
                 Success = false,
@@ -80,7 +80,7 @@ public class SendMessageCommandHandler(
         var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
         var fileDirectory = Path.Combine(Path.GetFullPath("wwwroot"), "uploads");
 
-        if(!Directory.Exists(fileDirectory))
+        if (!Directory.Exists(fileDirectory))
             Directory.CreateDirectory(fileDirectory);
 
         var filePath = Path.Combine(fileDirectory, fileName);

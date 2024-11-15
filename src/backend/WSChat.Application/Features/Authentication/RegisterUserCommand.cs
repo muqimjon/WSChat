@@ -11,7 +11,7 @@ using WSChat.Domain.Entities;
 
 public record RegisterUserCommand(string Name, string Username, string Password) : IRequest<UserResponse>;
 
-public class RegisterUserCommandHandler(IChatDbContext context) : 
+public class RegisterUserCommandHandler(IChatDbContext context) :
     IRequestHandler<RegisterUserCommand, UserResponse>
 {
     public async Task<UserResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)

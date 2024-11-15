@@ -29,7 +29,7 @@ public class GetChatByIdQueryHandler(IChatDbContext context) : IRequestHandler<G
             {
                 UserId = chat.CreatorId,
                 Username = chat.Creator.Username,
-                Name = chat.Creator.Name,                
+                Name = chat.Creator.Name,
             },
             Members = chat.ChatUsers.Select(ch => new UserResponse
             {

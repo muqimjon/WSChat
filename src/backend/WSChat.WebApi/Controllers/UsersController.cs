@@ -9,7 +9,7 @@ public class UsersController(IMediator mediator) : BaseController
 {
     [HttpPut("update")]
     public async Task<IActionResult> Update(UpdateUserProfileCommand command, CancellationToken cancellationToken)
-        => Ok( await mediator.Send(command, cancellationToken));
+        => Ok(await mediator.Send(command, cancellationToken));
 
     [HttpGet("get-by-id/{Id:long}")]
     public async Task<IActionResult> GetById(long Id, CancellationToken cancellationToken)

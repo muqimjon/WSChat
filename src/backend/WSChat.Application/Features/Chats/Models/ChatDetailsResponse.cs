@@ -1,6 +1,4 @@
-﻿using WSChat.Domain.Entities;
-
-namespace WSChat.Application.Features.Chats.Models;
+﻿namespace WSChat.Application.Features.Chats.Models;
 
 public class ChatDetailsResponse
 {

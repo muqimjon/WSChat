@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 using WSChat.Domain.Entities;
 
 namespace WSChat.Application.Interfaces;

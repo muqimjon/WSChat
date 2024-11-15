@@ -2,7 +2,6 @@
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using WSChat.Application.Features.Chats.Models;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 

@@ -1,8 +1,8 @@
 ﻿namespace WSChat.Infrastructure.Persistance.EntityFramework.EntityConfigurations;
 
-using WSChat.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using WSChat.Domain.Entities;
 
 public class ChatUserConfiguration : IEntityTypeConfiguration<ChatUser>
 {
