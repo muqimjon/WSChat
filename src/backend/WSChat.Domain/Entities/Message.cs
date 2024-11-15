@@ -7,10 +7,12 @@ public class Message : BaseEntity
 {
     public long SenderId { get; set; }
     public long ChatId { get; set; }
-    public string Content { get; set; } = string.Empty;
+    public long? ReplyToMessageId { get; set; } = default;
+    public string? Content { get; set; }
+    public string? FilePath { get; set; }
     public MessageStatus Status { get; set; } = MessageStatus.Sent;
-    public DateTime SentDate { get; set; } = DateTime.UtcNow;
 
     public User Sender { get; set; } = default!;
     public Chat Chat { get; set; } = default!;
+    public Message? ReplyToMessage { get; set; } = default!;
 }
