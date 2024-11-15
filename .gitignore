@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/src/backend/WSChat.Infrastructure/Persistence/EntityFramework/Migrations
+/src/backend/WSChat.WebApi/appsettings.json
+/src/backend/WSChat.WebApi/appsettings.Development.json
+/src/backend/WSChat.WebApi/wwwroot/uploads
