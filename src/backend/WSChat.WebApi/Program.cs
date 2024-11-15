@@ -1,3 +1,4 @@
+using EcoLink.WebApi.Extensions;
 using WSChat.Application;
 using WSChat.Infrastructure;
 
@@ -21,13 +22,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Enable WebSocket support
+app.MigrateDatabase();
 app.UseWebSockets();
+app.UseStaticFiles();
 
-// Add UseStaticFiles middleware
-app.UseStaticFiles(); // Static fayllarga xizmat ko'rsatish
-
-app.UseRouting(); // Routingni sozlashdan oldin qo'yiladi
+app.UseRouting();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

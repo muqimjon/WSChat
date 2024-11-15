@@ -27,7 +27,11 @@ public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext 
                     var message = JsonConvert.DeserializeObject<Message>(messageJson);
 
                     if (message is not null)
+                    {
+                        await context.Messages.AddAsync(message, cancellationToken);
+                        await context.SaveChangesAsync(cancellationToken);
                         await SendMessageToChatMembersAsync(message, cancellationToken);
+                    }
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -83,12 +87,10 @@ public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext 
 
         var members = chat.ChatUsers.Select(cu => cu.User.Id).ToList();
         var messageBytes = Encoding.UTF8.GetBytes(messageJson);
-
         var buffer = new ArraySegment<byte>(messageBytes);
-
         var sockets = webSocketManager.GetConnections(members);
+
         foreach (var socket in sockets)
-        {
             try
             {
                 await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken);
@@ -97,7 +99,6 @@ public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext 
             {
                 Console.WriteLine($"Error sending message: {ex.Message}");
             }
-        }
     }
 }
 
@@ -110,12 +111,6 @@ public class WebSocketManager
 
     public bool RemoveConnection(long userIds)
         => connections.TryRemove(userIds, out _);
-
-    public WebSocket? GetConnection(long userIds)
-    {
-        connections.TryGetValue(userIds, out var socket);
-        return socket;
-    }
 
     public IEnumerable<WebSocket> GetConnections(IEnumerable<long> userIds)
     {

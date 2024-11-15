@@ -13,6 +13,7 @@ public class DeleteChatCommandHandler(IChatDbContext context) : IRequestHandler<
     {
         var chat = await context.Chats
             .Include(c => c.ChatUsers)
+            .Include(c => c.Messages)
             .FirstOrDefaultAsync(c => c.Id == request.ChatId, cancellationToken);
 
         if (chat == null)
@@ -23,6 +24,7 @@ public class DeleteChatCommandHandler(IChatDbContext context) : IRequestHandler<
             };
 
         context.ChatUsers.RemoveRange(chat.ChatUsers);
+        context.Messages.RemoveRange(chat.Messages);
         context.Chats.Remove(chat);
         await context.SaveChangesAsync(cancellationToken);
 
