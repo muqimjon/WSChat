@@ -8,73 +8,85 @@ using System.Text;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 
-public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext dbContext) : IWebSocketService
+public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext context) : IWebSocketService
 {
-    public async Task HandleWebSocketAsync(string username, WebSocket socket, CancellationToken cancellationToken = default)
+    public async Task HandleWebSocketAsync(long userId, WebSocket socket, CancellationToken cancellationToken = default)
     {
-        webSocketManager.AddConnection(username, socket);
+        webSocketManager.AddConnection(userId, socket);
         var buffer = new byte[1024 * 4];
 
         try
         {
             while (socket.State == WebSocketState.Open)
             {
-                var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     var messageJson = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     var message = JsonConvert.DeserializeObject<Message>(messageJson);
 
-                    if (message != null)
-                    {
+                    if (message is not null)
                         await SendMessageToChatMembersAsync(message, cancellationToken);
-                    }
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    webSocketManager.RemoveConnection(username);
+                    webSocketManager.RemoveConnection(userId);
                     await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closed", cancellationToken);
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine($"WebSocket connection for {userId} was canceled.");
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"WebSocket error: {ex.Message}");
-            webSocketManager.RemoveConnection(username);
+            webSocketManager.RemoveConnection(userId);
+        }
+        finally
+        {
+            if (socket.State != WebSocketState.Closed)
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closing", cancellationToken);
         }
     }
 
+
     public async Task SendMessageToChatMembersAsync(Message message, CancellationToken cancellationToken = default)
     {
-        var chat = await dbContext.Chats
+        var chat = await context.Chats
             .Include(c => c.ChatUsers)
             .ThenInclude(cu => cu.User)
-            .FirstOrDefaultAsync(c => message.ChatId == c.Id, cancellationToken) ?? new();
+            .FirstOrDefaultAsync(c => message.ChatId == c.Id, cancellationToken);
 
-        var members = chat.ChatUsers.Select(cu => cu.User.Username).ToList();
-        var sockets = webSocketManager.GetConnections(members);
+        var sender = (await context.Users.FirstOrDefaultAsync(u => u.Id == message.SenderId, cancellationToken: cancellationToken))!;
 
-        var fileUrl = string.Empty;
-
-        if (!string.IsNullOrEmpty(message.FilePath))
-            fileUrl = message.FilePath;
-
-        var replyToMessageId = message.ReplyToMessageId ?? 0;
+        if (chat is null)
+            return;
 
         var messageJson = JsonConvert.SerializeObject(new
         {
-            message.Content,
-            message.SenderId,
             message.ChatId,
-            ReplyToMessageId = replyToMessageId,
-            SentDate = message.CreatedDate,
-            FileUrl = fileUrl,
+            chat.ChatName,
+            From = new
+            {
+                sender.Id,
+                sender.Name,
+                sender.Username,
+            },
+            message.ReplyToMessage,
+            message.Content,
+            message.FilePath,
+            message.Status,
         });
 
+        var members = chat.ChatUsers.Select(cu => cu.User.Id).ToList();
         var messageBytes = Encoding.UTF8.GetBytes(messageJson);
+
         var buffer = new ArraySegment<byte>(messageBytes);
 
+        var sockets = webSocketManager.GetConnections(members);
         foreach (var socket in sockets)
         {
             try
@@ -87,28 +99,27 @@ public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext 
             }
         }
     }
-
 }
 
 public class WebSocketManager
 {
-    private readonly ConcurrentDictionary<string, WebSocket> connections = new();
+    private readonly ConcurrentDictionary<long, WebSocket> connections = new();
 
-    public bool AddConnection(string usernames, WebSocket socket)
-        => connections.TryAdd(usernames, socket);
+    public bool AddConnection(long userIds, WebSocket socket)
+        => connections.TryAdd(userIds, socket);
 
-    public bool RemoveConnection(string usernames)
-        => connections.TryRemove(usernames, out _);
+    public bool RemoveConnection(long userIds)
+        => connections.TryRemove(userIds, out _);
 
-    public WebSocket? GetConnection(string usernames)
+    public WebSocket? GetConnection(long userIds)
     {
-        connections.TryGetValue(usernames, out var socket);
+        connections.TryGetValue(userIds, out var socket);
         return socket;
     }
 
-    public IEnumerable<WebSocket> GetConnections(IEnumerable<string> usernames)
+    public IEnumerable<WebSocket> GetConnections(IEnumerable<long> userIds)
     {
-        foreach (var userId in usernames)
+        foreach (var userId in userIds)
             if (connections.TryGetValue(userId, out var socket) && socket.State == WebSocketState.Open)
                 yield return socket;
     }

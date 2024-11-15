@@ -6,6 +6,6 @@ using WSChat.Domain.Entities;
 
 public interface IWebSocketService
 {
-    Task HandleWebSocketAsync(string username, WebSocket socket, CancellationToken cancellation);
+    Task HandleWebSocketAsync(long userId, WebSocket socket, CancellationToken cancellation);
     Task SendMessageToChatMembersAsync(Message message, CancellationToken cancellationToken);
 }

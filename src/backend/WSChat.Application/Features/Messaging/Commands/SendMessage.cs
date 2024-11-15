@@ -13,11 +13,11 @@ using WSChat.Domain.Entities;
 using WSChat.Domain.Enums;
 
 public record SendMessageCommand(
-    long UserId, 
-    long ChatId, 
-    string MessageContent, 
-    long? ReplyToMessageId, 
-    IFormFile? File) : 
+    long SenderId, 
+    long ChatId,
+    string MessageContent,
+    long? ReplyToMessageId,
+    IFormFile? File) :
     IRequest<SendMessageResponse>;
 
 public class SendMessageCommandHandler(
@@ -40,7 +40,7 @@ public class SendMessageCommandHandler(
 
         var message = new Message
         {
-            SenderId = request.UserId,
+            SenderId = request.SenderId,
             ChatId = request.ChatId,
             Content = request.MessageContent,
             Status = MessageStatus.Sent,
@@ -72,7 +72,7 @@ public class SendMessageCommandHandler(
         return replyMessage;
     }
 
-    private async Task<string> SaveFileAsync(IFormFile? file, CancellationToken cancellationToken)
+    private static async Task<string> SaveFileAsync(IFormFile? file, CancellationToken cancellationToken)
     {
         if (file == null)
             return string.Empty;

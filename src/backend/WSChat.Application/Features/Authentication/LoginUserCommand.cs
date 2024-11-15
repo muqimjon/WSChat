@@ -21,9 +21,8 @@ public class LoginCommandHandler(IChatDbContext context, IHttpContextAccessor ac
 
         if (user is not null && BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            var scheme = accessor.HttpContext?.Request.Scheme ?? "http";
             var host = accessor.HttpContext?.Request.Host.Value ?? "localhost";
-            var webSocketUrl = $"{scheme}://{host}/ws/{user.Username}";
+            var webSocketUrl = $"ws://{host}/api/Auth/connect?userId={user.Id}";
 
             return new LoginResponse
             {
