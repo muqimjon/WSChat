@@ -4,6 +4,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WSChat.Application.Exceptions;
+using WSChat.Application.Features.Chats.DTOs;
 using WSChat.Application.Features.Users.DTOs;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
@@ -20,10 +21,13 @@ public class GetUserProfileQueryHandler(
         var user = await context.Users
             .Include(u => u.ChatUsers)
             .ThenInclude(cu => cu.Chat)
-            .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken)
+            ?? throw new NotFoundException(nameof(User), nameof(User.Id), request.UserId);
 
-        return user is null ?
-            throw new NotFoundException(nameof(User), nameof(User.Id), request.UserId) :
-            mapper.Map<UserResultDto>(user);
+        var result = mapper.Map<UserResultDto>(user);
+        var chats = user.ChatUsers.Select(cu => cu.Chat);
+        result.Chats = mapper.Map<ICollection<ChatResultDtoForProp>>(chats);
+
+        return result;
     }
 }
