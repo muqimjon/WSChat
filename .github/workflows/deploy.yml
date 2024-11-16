@@ -28,8 +28,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      USERNAME: ${{ variables.DOCKER_USERNAME }}
+      USERNAME: ${{ secrets.DOCKER_USERNAME }}
       PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PROJECT: ${{ secrets.PROJECT }}
 
     steps:
       - name: Checkout code
@@ -37,8 +38,8 @@ jobs:
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v3
       - name: Build Docker image
-        run: docker build -t $USERNAME/inno-eco -f .\INNOEcoSystem.Api\Dockerfile .
+        run: docker build -t $USERNAME/$PROJECT -f .\src\backend\WSChat.WebApi\Dockerfile .
       - name: Login to Docker account
-        run: docker login -u $USERNAME -p $PASSWORD #--password-stdin
+        run: docker login -u $USERNAME -p $PASSWORD
       - name: Push Docker image
-        run: docker push $USERNAME/inno-eco
+        run: docker push $USERNAME/$PROJECT
