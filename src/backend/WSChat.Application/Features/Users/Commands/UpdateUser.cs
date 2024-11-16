@@ -4,6 +4,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WSChat.Application.Exceptions;
+using WSChat.Application.Features.Chats.DTOs;
 using WSChat.Application.Features.Users.DTOs;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
@@ -25,6 +26,10 @@ public class UpdateUserProfileCommandHandler(
         mapper.Map(request, user);
         await context.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<UserResultDto>(user);
+        var result = mapper.Map<UserResultDto>(user);
+        var chats = user.ChatUsers.Select(cu => cu.Chat);
+        result.Chats = mapper.Map<ICollection<ChatResultDtoForProp>>(chats);
+
+        return result;
     }
 }
