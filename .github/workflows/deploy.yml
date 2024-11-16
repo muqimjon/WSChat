@@ -43,3 +43,22 @@ jobs:
         run: docker login -u $USERNAME -p $PASSWORD
       - name: Push Docker image
         run: docker push $USERNAME/$PROJECT
+
+  deploy:
+    name: Deploy
+    needs: dockerize
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: SSH into AWS Ubuntu Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd ~/app
+            docker-compose pull
+            docker rmi $(docker images --quiet --filter dangling=true)
+            docker-compose up --detach
