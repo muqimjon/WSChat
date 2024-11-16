@@ -3,7 +3,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using WSChat.Application.Features.Authentication.Models;
+using WSChat.Application.Features.Authentication.DTOs;
 using WSChat.Application.Interfaces;
 
 public class LoginCommand : IRequest<LoginResponse>

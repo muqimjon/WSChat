@@ -1,13 +1,13 @@
 ﻿namespace WSChat.Application.Features.Messaging.Commands;
 
+using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using WSChat.Application.Features.Messaging.Models;
+using WSChat.Application.Exceptions;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 using WSChat.Domain.Enums;
@@ -18,63 +18,38 @@ public record SendMessageCommand(
     string MessageContent,
     long? ReplyToMessageId,
     IFormFile? File) :
-    IRequest<SendMessageResponse>;
+    IRequest<long>;
 
 public class SendMessageCommandHandler(
     IChatDbContext context,
-    IWebSocketService webSocketService) :
-    IRequestHandler<SendMessageCommand, SendMessageResponse>
+    IWebSocketService webSocketService,
+    IMapper mapper) :
+    IRequestHandler<SendMessageCommand, long>
 {
-    public async Task<SendMessageResponse> Handle([FromForm] SendMessageCommand request, CancellationToken cancellationToken)
+    public async Task<long> Handle(SendMessageCommand request, CancellationToken cancellationToken)
     {
+        var chat = await context.Chats.FirstOrDefaultAsync(ch => ch.Id == request.ChatId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Chat), nameof(Chat.Id), request.ChatId);
+
         var replyMessage = await GetReplyMessageAsync(request.ReplyToMessageId, cancellationToken);
-
         if (replyMessage is not null && replyMessage.ChatId != request.ChatId)
-            return new SendMessageResponse
-            {
-                Success = false,
-                Message = "Javob berilayotgan xabar boshqa chatga tegishli. Faqat bir xil chatdagi xabarga javob berishingiz mumkin."
-            };
+            throw new CustomException("Reply message is in another chat.");
 
-        var isExist = await context.Chats.AnyAsync(ch => ch.Id == request.ChatId, cancellationToken: cancellationToken);
-        if (!isExist)
-            return new SendMessageResponse
-            {
-                Success = false,
-                Message = "Bunday chat mavjud emas."
-            };
+        var user = await context.Users.FirstOrDefaultAsync(ch => ch.Id == request.SenderId, cancellationToken)
+            ?? throw new NotFoundException(nameof(User), nameof(User.Id), request.SenderId);
 
-        isExist = await context.Users.AnyAsync(ch => ch.Id == request.SenderId, cancellationToken: cancellationToken);
-        if (!isExist)
-            return new SendMessageResponse
-            {
-                Success = false,
-                Message = "Bunday foydalanuvchi mavjud emas."
-            };
-
-        string filePath = await SaveFileAsync(request.File, cancellationToken);
-
-        var message = new Message
-        {
-            SenderId = request.SenderId,
-            ChatId = request.ChatId,
-            Content = request.MessageContent,
-            Status = MessageStatus.Sent,
-            ReplyToMessageId = request.ReplyToMessageId,
-            FilePath = filePath,
-            ReplyToMessage = replyMessage
-        };
+        var message = mapper.Map<Message>(request);
+        message.FilePath = await SaveFileAsync(request.File, cancellationToken);
+        message.Status = MessageStatus.Sent;
+        message.Chat = chat;
+        message.Sender = user;
+        message.ReplyToMessage = replyMessage;
 
         await context.Messages.AddAsync(message, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
-
         await webSocketService.SendMessageToChatMembersAsync(message, cancellationToken);
 
-        return new SendMessageResponse
-        {
-            Success = true,
-            Message = "Xabar muvaffaqiyatli yuborildi"
-        };
+        return message.Id;
     }
 
     private async Task<Message?> GetReplyMessageAsync(long? replyToMessageId, CancellationToken cancellationToken)

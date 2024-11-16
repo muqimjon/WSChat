@@ -22,7 +22,7 @@ public class Message : BaseEntity
     public string? FilePath { get; set; }
 
     [JsonPropertyName("status")]
-    public MessageStatus Status { get; set; } = MessageStatus.Sent;
+    public MessageStatus Status { get; set; }
 
     public User Sender { get; set; } = default!;
     public Chat Chat { get; set; } = default!;

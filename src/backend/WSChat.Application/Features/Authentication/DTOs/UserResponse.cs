@@ -1,7 +1,8 @@
-﻿namespace WSChat.Application.Features.Messaging.Models;
+﻿namespace WSChat.Application.Features.Authentication.DTOs;
 
-public class SendMessageResponse
+public class UserResponse
 {
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
 }
+

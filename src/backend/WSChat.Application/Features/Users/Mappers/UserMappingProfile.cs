@@ -2,14 +2,15 @@
 
 using AutoMapper;
 using WSChat.Application.Features.Users.Commands;
-using WSChat.Application.Features.Users.Models;
+using WSChat.Application.Features.Users.DTOs;
 using WSChat.Domain.Entities;
 
-public class UserMappingProfile : Profile
+public class MessageMappingProfile : Profile
 {
-    public UserMappingProfile()
+    public MessageMappingProfile()
     {
-        CreateMap<User, UserProfileResponse>();
+        CreateMap<User, UserResultDto>();
+        CreateMap<User, UserResultDtoForProp>();
         CreateMap<UpdateUserProfileCommand, User>();
     }
 }

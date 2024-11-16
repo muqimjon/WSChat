@@ -1,4 +1,4 @@
-﻿namespace WSChat.Application.Features.Authentication.Models;
+﻿namespace WSChat.Application.Features.Authentication.DTOs;
 
 public class LoginResponse
 {

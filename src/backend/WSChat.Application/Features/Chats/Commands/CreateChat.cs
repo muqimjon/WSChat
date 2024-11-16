@@ -1,34 +1,26 @@
 ﻿namespace WSChat.Application.Features.Chats.Commands;
 
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using WSChat.Application.Features.Chats.Models;
+using WSChat.Application.Exceptions;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 using WSChat.Domain.Enums;
 
-public record CreateChatCommand(string ChatName, long CreatorId) : IRequest<ChatUserResponse>;
+public record CreateChatCommand(string ChatName, long CreatorId) : IRequest<long>;
 
-public class CreateChatCommandHandler(IChatDbContext context) : IRequestHandler<CreateChatCommand, ChatUserResponse>
+public class CreateChatCommandHandler(
+    IChatDbContext context,
+    IMapper mapper) :
+    IRequestHandler<CreateChatCommand, long>
 {
-    public async Task<ChatUserResponse> Handle(CreateChatCommand request, CancellationToken cancellationToken)
+    public async Task<long> Handle(CreateChatCommand request, CancellationToken cancellationToken)
     {
-        var isExist = await context.Users.AnyAsync(u => u.Id == request.CreatorId, cancellationToken);
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == request.CreatorId, cancellationToken)
+            ?? throw new NotFoundException(nameof(User), nameof(User.Id), request.CreatorId);
 
-        if (!isExist)
-            return new ChatUserResponse
-            {
-                Success = false,
-                Message = "Foydalanuvchi mavjud emas.",
-                UserId = request.CreatorId
-            };
-
-        var chat = new Chat
-        {
-            ChatName = request.ChatName,
-            ChatType = ChatType.Private,
-        };
-
+        var chat = mapper.Map<Chat>(request);
         await context.Chats.AddAsync(chat, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
@@ -42,13 +34,6 @@ public class CreateChatCommandHandler(IChatDbContext context) : IRequestHandler<
         await context.ChatUsers.AddAsync(chatUser, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
-        return new ChatUserResponse
-        {
-            ChatId = chat.Id,
-            ChatName = chat.ChatName,
-            Message = "Muvaffaqiyatli yaratildi. Id: " + chat.Id,
-            Success = true,
-            UserId = request.CreatorId
-        };
+        return chat.Id;
     }
 }

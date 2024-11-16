@@ -1,11 +1,11 @@
-﻿namespace WSChat.Application.Features.Users.Commands;
+﻿namespace WSChat.Application.Features.Authentication.Commands;
 
 using BCrypt.Net;
 using MediatR;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WSChat.Application.Features.Authentication.Models;
+using WSChat.Application.Features.Authentication.DTOs;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 
