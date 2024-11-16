@@ -2,5 +2,5 @@
 
 namespace WSChat.Application.Exceptions;
 
-public class NotFoundException(string message) :
-    BaseException(message, StatusCodes.Status404NotFound);
+public class NotFoundException(string model, string prop, dynamic value) :
+    BaseException($"{model} is not found with {prop}: {value}", StatusCodes.Status404NotFound);

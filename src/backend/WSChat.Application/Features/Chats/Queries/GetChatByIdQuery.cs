@@ -14,7 +14,6 @@ public class GetChatByIdQueryHandler(IChatDbContext context) : IRequestHandler<G
         var chat = await context.Chats
             .Include(ch => ch.ChatUsers)
             .ThenInclude(cu => cu.User)
-            .Include(ch => ch.Creator)
             .Include(ch => ch.Messages)
             .FirstOrDefaultAsync(ch => ch.Id == request.ChatId, cancellationToken);
 
@@ -25,17 +24,11 @@ public class GetChatByIdQueryHandler(IChatDbContext context) : IRequestHandler<G
         {
             ChatId = chat.Id,
             ChatName = chat.ChatName,
-            Creator = new UserResponse
-            {
-                UserId = chat.CreatorId,
-                Username = chat.Creator.Username,
-                Name = chat.Creator.Name,
-            },
             Members = chat.ChatUsers.Select(ch => new UserResponse
             {
                 UserId = ch.User.Id,
                 Username = ch.User.Username,
-                Name = ch.User.Name,
+                Name = ch.User.FirstName,
             }).ToList(),
             Messages = chat.Messages.Select(m => new MessageResponse
             {

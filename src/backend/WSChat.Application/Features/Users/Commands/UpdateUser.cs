@@ -1,37 +1,31 @@
 ﻿namespace WSChat.Application.Features.Users.Commands;
 
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using WSChat.Application.Exceptions;
+using WSChat.Application.Features.Users.Models;
 using WSChat.Application.Interfaces;
 
-public record UpdateUserProfileCommand(long UserId, string Name, string Email, string Username) :
-    IRequest<Models.UserResponse>;
+public record UpdateUserProfileCommand(long Id, string FirstName, string LastName, string Email, string Username) :
+    IRequest<UserProfileResponse>;
 
-public class UpdateUserProfileCommandHandler(IChatDbContext context) :
-    IRequestHandler<UpdateUserProfileCommand, Models.UserResponse>
+public class UpdateUserProfileCommandHandler(
+    IChatDbContext context,
+    IMapper mapper) :
+    IRequestHandler<UpdateUserProfileCommand, UserProfileResponse>
 {
-    public async Task<Models.UserResponse> Handle(
-        UpdateUserProfileCommand request,
-        CancellationToken cancellationToken)
+    public async Task<UserProfileResponse> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
     {
         var user = await context.Users
-            .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken);
 
         if (user is null)
-            return new Models.UserResponse
-            {
-                Success = false,
-                Message = "Foydalanuvchi topilmadi"
-            };
+            throw new NotFoundException(nameof(user), nameof(user.Id), request.Id);
 
-        user.Name = request.Name;
-        user.Username = request.Username;
+        mapper.Map(request, user);
         await context.SaveChangesAsync(cancellationToken);
 
-        return new Models.UserResponse
-        {
-            Success = true,
-            Message = "Foydalanuvchi profili muvaffaqiyatli yangilandi"
-        };
+        return mapper.Map<UserProfileResponse>(user);
     }
 }

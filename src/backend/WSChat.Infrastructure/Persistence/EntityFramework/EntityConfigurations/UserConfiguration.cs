@@ -1,4 +1,4 @@
-﻿namespace WSChat.Infrastructure.Persistance.EntityFramework.EntityConfigurations;
+﻿namespace WSChat.Infrastructure.Persistence.EntityFramework.EntityConfigurations;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,7 +18,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
     private static void ConfigureProperties(EntityTypeBuilder<User> builder)
     {
-        builder.Property(u => u.Name)
+        builder.Property(u => u.FirstName)
+               .IsRequired()
+               .HasMaxLength(100);
+
+        builder.Property(u => u.LastName)
                .IsRequired()
                .HasMaxLength(100);
 
@@ -29,7 +33,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Username).IsUnique();
 
         builder.Property(u => u.PasswordHash)
-               .IsRequired();
+               .IsRequired()
+               .HasMaxLength(83);
     }
 
     private static void ConfigureRelationships(EntityTypeBuilder<User> builder)

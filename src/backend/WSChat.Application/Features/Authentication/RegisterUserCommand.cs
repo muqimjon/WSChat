@@ -28,7 +28,7 @@ public class RegisterUserCommandHandler(IChatDbContext context) :
 
         var newUser = new User
         {
-            Name = request.Name,
+            FirstName = request.Name,
             Username = request.Username,
             PasswordHash = hashedPassword,
         };

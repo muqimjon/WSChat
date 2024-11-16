@@ -9,8 +9,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddMediatR(Assembly.GetExecutingAssembly());
-        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        var assembly = Assembly.GetExecutingAssembly();
+
+        services.AddMediatR(assembly);
+        services.AddValidatorsFromAssembly(assembly);
+        services.AddAutoMapper(assembly);
+
         return services;
     }
 }

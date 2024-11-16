@@ -1,6 +1,7 @@
 ﻿namespace WSChat.Application.Features.Chats.Commands;
 
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using WSChat.Application.Features.Chats.Models;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
@@ -12,11 +13,20 @@ public class CreateChatCommandHandler(IChatDbContext context) : IRequestHandler<
 {
     public async Task<ChatUserResponse> Handle(CreateChatCommand request, CancellationToken cancellationToken)
     {
+        var isExist = await context.Users.AnyAsync(u => u.Id == request.CreatorId, cancellationToken);
+
+        if (!isExist)
+            return new ChatUserResponse
+            {
+                Success = false,
+                Message = "Foydalanuvchi mavjud emas.",
+                UserId = request.CreatorId
+            };
+
         var chat = new Chat
         {
             ChatName = request.ChatName,
             ChatType = ChatType.Private,
-            CreatorId = request.CreatorId,
         };
 
         await context.Chats.AddAsync(chat, cancellationToken);
@@ -25,7 +35,8 @@ public class CreateChatCommandHandler(IChatDbContext context) : IRequestHandler<
         var chatUser = new ChatUser
         {
             ChatId = chat.Id,
-            UserId = request.CreatorId
+            UserId = request.CreatorId,
+            Role = ChatUserRole.Owner,
         };
 
         await context.ChatUsers.AddAsync(chatUser, cancellationToken);

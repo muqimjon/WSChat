@@ -76,7 +76,7 @@ public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext 
             From = new
             {
                 sender.Id,
-                sender.Name,
+                sender.FirstName,
                 sender.Username,
             },
             message.ReplyToMessage,

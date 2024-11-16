@@ -3,5 +3,6 @@
 public enum ChatType
 {
     Private,
-    Group
+    Group,
+    SuperGroup
 }
