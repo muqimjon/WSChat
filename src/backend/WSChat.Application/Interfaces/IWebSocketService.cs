@@ -2,10 +2,10 @@
 
 using System.Net.WebSockets;
 using System.Threading;
-using WSChat.Domain.Entities;
+using WSChat.Application.Features.Messaging.Models;
 
 public interface IWebSocketService
 {
     Task HandleWebSocketAsync(long userId, WebSocket socket, CancellationToken cancellation);
-    Task SendMessageToChatMembersAsync(Message message, CancellationToken cancellationToken);
+    Task SendMessageToChatMembersAsync(MessageResultDto message, CancellationToken cancellationToken);
 }

@@ -15,12 +15,11 @@ public class GetMessagesByChatIdQueryHandler(
 {
     public async Task<IEnumerable<MessageResultDto>> Handle(GetMessagesByChatIdQuery request, CancellationToken cancellationToken)
     {
-        var messages = await context.Messages
-            .Include(u => u.Chat)
-            .Include(m => m.Sender)
-            .Where(u => u.Id == request.ChatId)
-            .ToListAsync(cancellationToken);
+        var chat = await context.Chats
+            .Include(c => c.Messages)
+            .ThenInclude(m => m.Sender)
+            .FirstOrDefaultAsync(u => u.Id == request.ChatId);
 
-        return mapper.Map<IEnumerable<MessageResultDto>>(messages);
+        return mapper.Map<IEnumerable<MessageResultDto>>(chat?.Messages);
     }
 }

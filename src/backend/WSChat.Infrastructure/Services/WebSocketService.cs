@@ -1,14 +1,22 @@
 ﻿namespace WSChat.Infrastructure.Services;
 
+using AutoMapper;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
+using WSChat.Application.Exceptions;
+using WSChat.Application.Features.Messaging.Models;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 
-public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext context) : IWebSocketService
+public class WebSocketService(
+    WebSocketManager webSocketManager,
+    IChatDbContext context,
+    IMapper mapper,
+    IMediator mediator) : IWebSocketService
 {
     public async Task HandleWebSocketAsync(long userId, WebSocket socket, CancellationToken cancellationToken = default)
     {
@@ -30,7 +38,9 @@ public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext 
                     {
                         await context.Messages.AddAsync(message, cancellationToken);
                         await context.SaveChangesAsync(cancellationToken);
-                        await SendMessageToChatMembersAsync(message, cancellationToken);
+
+                        var messageDto = mapper.Map<MessageResultDto>(message);
+                        await SendMessageToChatMembersAsync(messageDto, cancellationToken);
                     }
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
@@ -57,34 +67,15 @@ public class WebSocketService(WebSocketManager webSocketManager, IChatDbContext 
     }
 
 
-    public async Task SendMessageToChatMembersAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task SendMessageToChatMembersAsync(MessageResultDto message, CancellationToken cancellationToken = default)
     {
         var chat = await context.Chats
             .Include(c => c.ChatUsers)
             .ThenInclude(cu => cu.User)
-            .FirstOrDefaultAsync(c => message.ChatId == c.Id, cancellationToken);
+            .FirstOrDefaultAsync(c => message.Chat.Id == c.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(Chat), nameof(Chat.Id), message.Chat.Id);
 
-        var sender = (await context.Users.FirstOrDefaultAsync(u => u.Id == message.SenderId, cancellationToken: cancellationToken))!;
-
-        if (chat is null)
-            return;
-
-        var messageJson = JsonConvert.SerializeObject(new
-        {
-            message.ChatId,
-            chat.ChatName,
-            From = new
-            {
-                sender.Id,
-                sender.FirstName,
-                sender.Username,
-            },
-            message.ReplyToMessage,
-            message.Content,
-            message.FilePath,
-            message.Status,
-        });
-
+        var messageJson = JsonConvert.SerializeObject(message);
         var members = chat.ChatUsers.Select(cu => cu.User.Id).ToList();
         var messageBytes = Encoding.UTF8.GetBytes(messageJson);
         var buffer = new ArraySegment<byte>(messageBytes);

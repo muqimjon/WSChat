@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using WSChat.Application.Exceptions;
+using WSChat.Application.Features.Messaging.Models;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 using WSChat.Domain.Enums;
@@ -15,7 +16,7 @@ using WSChat.Domain.Enums;
 public record SendMessageCommand(
     long SenderId,
     long ChatId,
-    string MessageContent,
+    string Content,
     long? ReplyToMessageId,
     IFormFile? File) :
     IRequest<long>;
@@ -41,13 +42,13 @@ public class SendMessageCommandHandler(
         var message = mapper.Map<Message>(request);
         message.FilePath = await SaveFileAsync(request.File, cancellationToken);
         message.Status = MessageStatus.Sent;
-        message.Chat = chat;
-        message.Sender = user;
-        message.ReplyToMessage = replyMessage;
+
 
         await context.Messages.AddAsync(message, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
-        await webSocketService.SendMessageToChatMembersAsync(message, cancellationToken);
+
+        var messageDto = mapper.Map<MessageResultDto>(message);
+        await webSocketService.SendMessageToChatMembersAsync(messageDto, cancellationToken);
 
         return message.Id;
     }
