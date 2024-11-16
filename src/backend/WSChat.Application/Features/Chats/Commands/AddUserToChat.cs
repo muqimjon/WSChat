@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
+using WSChat.Domain.Enums;
 
 public record AddUserToChatCommand(long ChatId, long UserId) : IRequest<Models.ChatUserResponse>;
 
@@ -11,10 +12,20 @@ public class AddUserToChatCommandHandler(IChatDbContext context) : IRequestHandl
 {
     public async Task<Models.ChatUserResponse> Handle(AddUserToChatCommand request, CancellationToken cancellationToken)
     {
-        var existingChatUser = await context.ChatUsers
-            .FirstOrDefaultAsync(cu => cu.ChatId == request.ChatId && cu.UserId == request.UserId, cancellationToken);
+        var chat = await context.Chats
+            .Include(ch => ch.ChatUsers)
+            .FirstOrDefaultAsync(cu => cu.Id == request.ChatId, cancellationToken);
 
-        if (existingChatUser is not null)
+        if (chat is null)
+            return new Models.ChatUserResponse
+            {
+                Success = false,
+                Message = "Chat mavjud emas."
+            };
+
+        var existingChatUser = chat.ChatUsers.Any(cu => cu.UserId == request.UserId);
+
+        if (existingChatUser)
             return new Models.ChatUserResponse
             {
                 Success = false,
@@ -26,6 +37,9 @@ public class AddUserToChatCommandHandler(IChatDbContext context) : IRequestHandl
             UserId = request.UserId,
             ChatId = request.ChatId
         };
+
+        if (chat.ChatUsers.Count >= 2)
+            chat.ChatType = ChatType.Group;
 
         await context.ChatUsers.AddAsync(newChatUser, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);

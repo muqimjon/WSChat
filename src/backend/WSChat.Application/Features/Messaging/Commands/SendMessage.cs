@@ -36,6 +36,22 @@ public class SendMessageCommandHandler(
                 Message = "Javob berilayotgan xabar boshqa chatga tegishli. Faqat bir xil chatdagi xabarga javob berishingiz mumkin."
             };
 
+        var isExist = await context.Chats.AnyAsync(ch => ch.Id == request.ChatId, cancellationToken: cancellationToken);
+        if (!isExist)
+            return new SendMessageResponse
+            {
+                Success = false,
+                Message = "Bunday chat mavjud emas."
+            };
+
+        isExist = await context.Users.AnyAsync(ch => ch.Id == request.SenderId, cancellationToken: cancellationToken);
+        if (!isExist)
+            return new SendMessageResponse
+            {
+                Success = false,
+                Message = "Bunday foydalanuvchi mavjud emas."
+            };
+
         string filePath = await SaveFileAsync(request.File, cancellationToken);
 
         var message = new Message

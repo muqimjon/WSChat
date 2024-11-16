@@ -39,7 +39,7 @@ public class RegisterUserCommandHandler(IChatDbContext context) :
         return new UserResponse
         {
             Success = true,
-            Message = "Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi"
+            Message = "Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi. Id: " + newUser.Id,
         };
     }
 }

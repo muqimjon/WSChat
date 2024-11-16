@@ -35,7 +35,7 @@ public class CreateChatCommandHandler(IChatDbContext context) : IRequestHandler<
         {
             ChatId = chat.Id,
             ChatName = chat.ChatName,
-            Message = "Muvaffaqiyatli yaratildi",
+            Message = "Muvaffaqiyatli yaratildi. Id: " + chat.Id,
             Success = true,
             UserId = request.CreatorId
         };

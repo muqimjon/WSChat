@@ -21,7 +21,6 @@ public class RemoveUserFromChatCommandHandler(IChatDbContext context) : IRequest
                 Message = "Foydalanuvchi chatda topilmadi."
             };
 
-
         context.ChatUsers.Remove(chatUser);
         await context.SaveChangesAsync(cancellationToken);
 
