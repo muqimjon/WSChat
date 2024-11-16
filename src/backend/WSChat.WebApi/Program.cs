@@ -7,6 +7,11 @@ using WSChat.WebSocketApi.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
+
 builder.Services.AddControllers(options =>
 {
     options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
@@ -14,10 +19,6 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApplication();
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
 {
@@ -33,22 +34,19 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.MigrateDatabase();
 app.UseCors("AllowAll");
 app.UseWebSockets();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();

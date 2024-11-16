@@ -15,8 +15,10 @@ public class DeleteUserCommandHandler(IChatDbContext context) : IRequestHandler<
             .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken)
             ?? throw new NotFoundException(nameof(User), nameof(User.Id), request.UserId);
 
-        _ = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash) ?
-            throw new AuthenticationException("Invalid password.") : (bool)default;
+        var isCorrect = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+
+        if (isCorrect)
+            throw new AuthenticationException("Invalid password.");
 
         context.Users.Remove(user);
         await context.SaveChangesAsync(cancellationToken);

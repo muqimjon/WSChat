@@ -1,46 +1,39 @@
 ﻿namespace WSChat.Application.Features.Authentication.Commands;
 
+using AutoMapper;
 using BCrypt.Net;
 using MediatR;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WSChat.Application.Features.Authentication.DTOs;
+using WSChat.Application.Exceptions;
 using WSChat.Application.Interfaces;
 using WSChat.Domain.Entities;
 
-public record RegisterUserCommand(string Name, string Username, string Password) : IRequest<UserResponse>;
+public record RegisterUserCommand(
+    string FirstName,
+    string LastName,
+    string Email,
+    string Username,
+    string Password) : IRequest<long>;
 
-public class RegisterUserCommandHandler(IChatDbContext context) :
-    IRequestHandler<RegisterUserCommand, UserResponse>
+public class RegisterUserCommandHandler(
+    IChatDbContext context,
+    IMapper mapper) :
+    IRequestHandler<RegisterUserCommand, long>
 {
-    public async Task<UserResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<long> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         var existingUser = context.Users.FirstOrDefault(u => u.Username == request.Username);
         if (existingUser is not null)
-            return new UserResponse
-            {
-                Success = false,
-                Message = "Foydalanuvchi nomi band, iltimos boshqasini tanlang."
-            };
+            throw new AlreadyExistsException(nameof(User), nameof(User.Username), request.Username);
 
-        var hashedPassword = BCrypt.HashPassword(request.Password);
-
-        var newUser = new User
-        {
-            FirstName = request.Name,
-            Username = request.Username,
-            PasswordHash = hashedPassword,
-        };
-
-        context.Users.Add(newUser);
+        var newUser = mapper.Map<User>(request);
+        newUser.PasswordHash = BCrypt.HashPassword(request.Password);
+        await context.Users.AddAsync(newUser, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
-        return new UserResponse
-        {
-            Success = true,
-            Message = "Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi. Id: " + newUser.Id,
-        };
+        return newUser.Id;
     }
 }
 

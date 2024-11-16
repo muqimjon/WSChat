@@ -15,11 +15,11 @@ public class UsersController(IMediator mediator) : BaseController
             Data = await mediator.Send(command, cancellationToken)
         });
 
-    [HttpGet("get-by-id/{Id:long}")]
-    public async Task<IActionResult> GetById(long Id, CancellationToken cancellationToken)
+    [HttpGet("get-by-id/{userId:long}")]
+    public async Task<IActionResult> GetById(long userId, CancellationToken cancellationToken)
     => Ok(new Response
     {
-        Data = await mediator.Send(new GetUserProfileQuery(Id), cancellationToken)
+        Data = await mediator.Send(new GetUserProfileQuery(userId), cancellationToken)
     });
 
     [HttpDelete("delete")]

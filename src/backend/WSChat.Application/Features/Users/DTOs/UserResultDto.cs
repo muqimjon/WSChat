@@ -9,7 +9,6 @@ public class UserResultDto
     public string LastName { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
 
-    public ICollection<ChatResultDtoForProp> ChatUsers { get; set; } = [];
+    public ICollection<ChatResultDtoForProp> Chats { get; set; } = [];
 }
