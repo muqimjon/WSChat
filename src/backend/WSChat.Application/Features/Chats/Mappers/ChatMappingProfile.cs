@@ -12,5 +12,6 @@ public class ChatMappingProfile : Profile
         CreateMap<Chat, ChatResultDto>();
         CreateMap<Chat, ChatResultDtoForProp>();
         CreateMap<CreateChatCommand, Chat>();
+        CreateMap<AddUserToChatCommand, ChatUser>();
     }
 }

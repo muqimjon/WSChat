@@ -43,7 +43,6 @@ public class SendMessageCommandHandler(
         message.FilePath = await SaveFileAsync(request.File, cancellationToken);
         message.Status = MessageStatus.Sent;
 
-
         await context.Messages.AddAsync(message, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
