@@ -38,7 +38,7 @@ jobs:
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v3
       - name: Build Docker image
-        run: docker build -t $USERNAME/$PROJECT -f .\src\backend\WSChat.WebApi\Dockerfile .
+        run: docker build -t $USERNAME/$PROJECT -f ./src/backend/WSChat.WebApi/Dockerfile .
       - name: Login to Docker account
         run: docker login -u $USERNAME -p $PASSWORD
       - name: Push Docker image
