@@ -203,5 +203,5 @@ public class WebSocketService(
 
 public class ErrorMessageDto
 {
-    public string Error { get; set; }
+    public string Error { get; set; } = string.Empty;
 }

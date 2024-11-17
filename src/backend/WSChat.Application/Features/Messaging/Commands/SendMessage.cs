@@ -24,7 +24,8 @@ public record SendMessageCommand(
 public class SendMessageCommandHandler(
     IChatDbContext context,
     IWebSocketService webSocketService,
-    IMapper mapper) :
+    IMapper mapper,
+    IMediator mediator) :
     IRequestHandler<SendMessageCommand, long>
 {
     public async Task<long> Handle(SendMessageCommand request, CancellationToken cancellationToken)
@@ -39,8 +40,15 @@ public class SendMessageCommandHandler(
         var user = await context.Users.FirstOrDefaultAsync(ch => ch.Id == request.SenderId, cancellationToken)
             ?? throw new NotFoundException(nameof(User), nameof(User.Id), request.SenderId);
 
+        var userChat = await context.ChatUsers
+            .FirstOrDefaultAsync(cu => cu.UserId == request.SenderId && cu.ChatId == request.ChatId, cancellationToken)
+            ?? throw new CustomException($"User with ID {request.SenderId} is not a member of the chat with ID {request.ChatId}.");
+
         var message = mapper.Map<Message>(request);
-        message.FilePath = await SaveFileAsync(request.File, cancellationToken);
+        
+        if(request.File is not null)
+            message.FilePath = await mediator.Send(new UploadFileCommand(request.File), cancellationToken);
+
         message.Status = MessageStatus.Sent;
 
         await context.Messages.AddAsync(message, cancellationToken);
@@ -61,28 +69,5 @@ public class SendMessageCommandHandler(
             .FirstOrDefaultAsync(m => m.Id == replyToMessageId.Value, cancellationToken);
 
         return replyMessage;
-    }
-
-    private static async Task<string> SaveFileAsync(IFormFile? file, CancellationToken cancellationToken)
-    {
-        if (file == null)
-            return string.Empty;
-
-        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-        var fileDirectory = Path.Combine(Path.GetFullPath("wwwroot"), "uploads");
-
-        if (!Directory.Exists(fileDirectory))
-            Directory.CreateDirectory(fileDirectory);
-
-        var filePath = Path.Combine(fileDirectory, fileName);
-
-        using (FileStream fileStream = new(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(fileStream, cancellationToken);
-        }
-
-        var fileUrl = Path.Combine("uploads", fileName);
-
-        return fileUrl;
     }
 }

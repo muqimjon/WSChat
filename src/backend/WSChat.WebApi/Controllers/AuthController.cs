@@ -25,6 +25,7 @@ public class AuthController(
         });
 
     [HttpGet("connect")]
+    [ProducesResponseType(typeof(Message), StatusCodes.Status200OK)]
     public async Task ConnectToChat(long userId)
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
@@ -35,9 +36,6 @@ public class AuthController(
             await webSocketService.HandleWebSocketAsync(userId, socket, cancellationToken);
         }
         else
-        {
             HttpContext.Response.StatusCode = 400;
-        }
     }
-
 }

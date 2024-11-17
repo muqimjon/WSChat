@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /src/backend/WSChat.WebApi/appsettings.Development.json
 /src/backend/WSChat.WebApi/wwwroot/uploads
 /src/backend/WSChat.Infrastructure/Persistence/EntityFramework/Migrations
+/src/backend/WSChat.Infrastructure/Persistence/EntityFramework/Migration

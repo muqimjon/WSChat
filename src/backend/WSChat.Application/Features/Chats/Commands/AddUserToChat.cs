@@ -16,6 +16,9 @@ public class AddUserToChatCommandHandler(
 {
     public async Task<bool> Handle(AddUserToChatCommand request, CancellationToken cancellationToken)
     {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken)
+            ?? throw new NotFoundException(nameof(User), nameof(User.Id), request.UserId);
+
         var chat = await context.Chats
             .Include(ch => ch.ChatUsers)
             .ThenInclude(cu => cu.User)

@@ -4,7 +4,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Authentication;
+using WSChat.Application.Exceptions;
 using WSChat.Application.Features.Authentication.DTOs;
 using WSChat.Application.Features.Chats.DTOs;
 using WSChat.Application.Features.Users.DTOs;

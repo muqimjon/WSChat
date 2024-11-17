@@ -9,19 +9,17 @@ public class Message : BaseEntity
     [JsonPropertyName("senderId")]
     public long SenderId { get; set; }
 
-    [JsonPropertyName("chat_id")]
+    [JsonPropertyName("chatId")]
     public long ChatId { get; set; }
 
-    [JsonPropertyName("reply_to_message_id")]
+    [JsonPropertyName("replyToMessageId")]
     public long? ReplyToMessageId { get; set; } = default;
 
     [JsonPropertyName("content")]
     public string? Content { get; set; }
 
-    [JsonPropertyName("file_path")]
+    [JsonPropertyName("filePath")]
     public string? FilePath { get; set; }
-
-    [JsonPropertyName("status")]
     public MessageStatus Status { get; set; }
 
     public User Sender { get; set; } = default!;
