@@ -41,9 +41,9 @@ public class MessagesController(IMediator mediator) : BaseController
         }
 
         var fileUrl = Path.Combine("uploads", fileName).Replace("\\", "/");
-        return Ok(new  Response
+        return Ok(new Response
         {
-            Data = fileUrl 
+            Data = fileUrl
         });
     }
 

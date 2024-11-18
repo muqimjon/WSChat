@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WSChat.Infrastructure.Persistence.EntityFramework;
 
-namespace EcoLink.WebApi.Extensions;
+namespace WSChat.WebSocketApi.Extensions;
 
 public static class MigrationHelper
 {

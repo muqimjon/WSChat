@@ -1,6 +1,7 @@
 ﻿namespace WSChat.WebSocketApi.Controllers;
 
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WSChat.Application.Features.Authentication.Commands;
 using WSChat.Application.Interfaces;
@@ -10,6 +11,7 @@ public class AuthController(
     IMediator mediator,
     IWebSocketService webSocketService) : BaseController
 {
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> LogIn(RegisterUserCommand command, CancellationToken cancellationToken)
         => Ok(new Response
@@ -17,6 +19,7 @@ public class AuthController(
             Data = await mediator.Send(command, cancellationToken)
         });
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> LogIn(LoginCommand command, CancellationToken cancellationToken)
         => Ok(new Response

@@ -1,36 +1,18 @@
-using EcoLink.WebApi.Extensions;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using WSChat.Application;
 using WSChat.Infrastructure;
+using WSChat.WebSocketApi.Extensions;
+using WSChat.WebSocketApi;
 using WSChat.WebSocketApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
-
-builder.Services.AddControllers(options =>
-{
-    options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
-});
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-        });
-});
+builder.Services.AddWebApiServices(builder.Configuration);
 
 var app = builder.Build();
 

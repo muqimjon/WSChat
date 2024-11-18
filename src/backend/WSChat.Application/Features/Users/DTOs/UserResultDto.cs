@@ -10,5 +10,5 @@ public class UserResultDto
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
 
-    public ICollection<ChatResultDtoForProp> Chats { get; set; } = [];
+    public IEnumerable<ChatResultDtoForProp> Chats { get; set; } = [];
 }

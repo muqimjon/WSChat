@@ -4,7 +4,6 @@ using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using WSChat.Application.Exceptions;
@@ -45,8 +44,8 @@ public class SendMessageCommandHandler(
             ?? throw new CustomException($"User with ID {request.SenderId} is not a member of the chat with ID {request.ChatId}.");
 
         var message = mapper.Map<Message>(request);
-        
-        if(request.File is not null)
+
+        if (request.File is not null)
             message.FilePath = await mediator.Send(new UploadFileCommand(request.File), cancellationToken);
 
         message.Status = MessageStatus.Sent;
