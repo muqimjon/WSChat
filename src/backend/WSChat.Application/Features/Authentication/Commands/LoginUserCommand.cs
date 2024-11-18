@@ -25,8 +25,8 @@ public class LoginCommand : IRequest<LoginResponse>
 public class LoginCommandHandler(
     IChatDbContext context,
     IHttpContextAccessor accessor,
-    IMapper mapper, 
-    IConfiguration configuration) : 
+    IMapper mapper,
+    IConfiguration configuration) :
     IRequestHandler<LoginCommand, LoginResponse>
 {
     public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -72,7 +72,7 @@ public class LoginCommandHandler(
 
             Expires = DateTime.UtcNow.AddHours(5),
             SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"])),
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]!)),
                 SecurityAlgorithms.HmacSha256Signature),
         };
 

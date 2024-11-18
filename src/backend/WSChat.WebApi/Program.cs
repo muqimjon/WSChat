@@ -1,7 +1,7 @@
 using WSChat.Application;
 using WSChat.Infrastructure;
-using WSChat.WebSocketApi.Extensions;
 using WSChat.WebSocketApi;
+using WSChat.WebSocketApi.Extensions;
 using WSChat.WebSocketApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +11,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddWebApiServices(builder.Configuration);
 
 var app = builder.Build();
